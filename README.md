@@ -1,9 +1,9 @@
 # SMORE: Knowledge Graph Completion and Multi-hop Reasoning in Massive Knowledge Graphs
 
-SMORE is a a versatile framework that scales multi-hop query embeddings over KGs. SMORE can easily train query embeddings on Freebase KG with more than 86M nodes and 338M edges on a single machine. For more details, please refer to our [paper](https://icml21ssl.github.io/pages/files/Scaling_poster.pdf).
+SMORE is a a versatile framework that scales multi-hop query embeddings over KGs. SMORE can easily train query embeddings on Freebase KG with more than 86M nodes and 338M edges on a single machine. For more details, please refer to our [paper](https://arxiv.org/pdf/2110.14890.pdf).
 
 ## Overview
-![](https://github.com/Hanjun-Dai/multihop_kg/blob/license/assets/pipeline.png?raw=true)
+![](https://github.com/google-research/smore/blob/main/assets/pipeline.png?raw=true)
 SMORE designs an optimized pipeline with the following features.
 - [x] Multi-GPU Training
 - [x] Bidirectional Online Query Sampling
@@ -40,11 +40,13 @@ We welcome pull request, please check [CONTRIBUTING.md](https://github.com/Hanju
 If you use this repo, please cite the following paper.
 
 ```
-@article{
- ren2020scaling,
- title={Scaling up Logical Query Embeddings on Knowledge Graphs},
- author={Ren, Hongyu and Dai, Hanjun and Dai, Bo and Chen, Xinyun and Zhou, Denny and Leskovec, Jure and Schuurmans, Dale},
- year={2021}
+@misc{ren2021smore,
+      title={SMORE: Knowledge Graph Completion and Multi-hop Reasoning in Massive Knowledge Graphs}, 
+      author={Hongyu Ren and Hanjun Dai and Bo Dai and Xinyun Chen and Denny Zhou and Jure Leskovec and Dale Schuurmans},
+      year={2021},
+      eprint={2110.14890},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
 }
 ```
 
