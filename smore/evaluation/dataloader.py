@@ -156,3 +156,38 @@ class Test1pDataset(TestDataset):
             else:
                 d[key] = set()
         return Test1pDataset(d, self.nentity, self.nrelation)
+
+
+class TestWikikgv2Dataset(TestDataset):
+    def __init__(self, data, nentity, nrelation):
+        """
+        Specifically designed for OGB-LSC WikiKG v2. Since no candidates are provided by the original dataset, we generate candidates based on heuristics such as degrees / entity types.
+        Args:
+            data: a dict of {'head', 'relation', 'tail', 'tail_neg'}
+        """
+        super(TestWikikgv2Dataset, self).__init__(nentity, nrelation)
+        self.data = data
+        self.test_all = False
+
+    def __len__(self):
+        return self.data['head'].shape[0]
+
+    def __getitem__(self, idx):        
+        query_structure = ('e', ('r',))
+        head = self.data['head'][idx]
+        rel = self.data['relation'][idx]
+        tail = self.data['tail'][idx]
+        query = (head, (rel,))
+
+        easy_answers = set()
+        neg_samples = self.data['tail_neg'][idx]
+        return neg_samples, flatten(query), query, query_structure, easy_answers, set([tail])
+
+    def subset(self, pos, num):
+        d = {}
+        for key in self.data:
+            if len(self.data[key]):
+                d[key] = self.data[key][pos : pos + num]
+            else:
+                d[key] = set()
+        return TestWikikgv2Dataset(d, self.nentity, self.nrelation)
