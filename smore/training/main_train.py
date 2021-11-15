@@ -38,7 +38,7 @@ from smore.common.config import parse_args, all_tasks, query_name_dict, name_que
 from smore.common.embedding.embed_optimizer import get_optim_class
 from smore.cpp_sampler.sampler_clib import KGMem
 from smore.training.train_process import async_aggr, train_mp
-from smore.evaluation.dataloader import MultihopTestDataset, Test1pDataset, Test1pBatchDataset
+from smore.evaluation.dataloader import MultihopTestDataset, Test1pDataset, Test1pBatchDataset, TestWikikgv2Dataset
 
 from collections import namedtuple
 QueryData = namedtuple('QueryData', ['data', 'buffer', 'writer_buffer'])
@@ -235,7 +235,9 @@ def load_1p_eval_data(args, phase):
         if 'tail_neg' in all_data:
             fwd_data['tail_neg'] = all_data['tail_neg']
         merged_dict = fwd_data
-    if args.eval_batch_size > 1:
+    if "wikikg90m-v2" in args.data_path:
+        test_dataset = TestWikikgv2Dataset(merged_dict, args.nentity, args.nrelation)
+    elif args.eval_batch_size > 1:
         test_dataset = Test1pBatchDataset(merged_dict, args.nentity, args.nrelation)
     else:
         test_dataset = Test1pDataset(merged_dict, args.nentity, args.nrelation)

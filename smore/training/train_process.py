@@ -45,8 +45,50 @@ from smore.cpp_sampler.online_sampler import OnlineSampler
 from smore.common.util import name_query_dict, query_name_dict, thread_wrapped_func, log_metrics, tuple2filterlist, eval_tuple, flatten_query
 from smore.common.embedding.embed_optimizer import get_optim_class
 from smore.evaluation.dataloader import TestDataset
+from ogb.lsc import WikiKG90Mv2Evaluator
 
 eps = 1e-8
+
+def test_step_wikikgv2(model, args, evaluator, test_dataloader, result_buffer, train_step, device, phase):
+    model.eval()
+    rank = dist.get_rank()
+    step = 0
+    total_steps = len(test_dataloader)
+    logs = collections.defaultdict(collections.Counter)
+    negative_sample_bias = None
+    
+    pred_dict = {'h,r->t': {'t_pred_top10': [], 't': []}}
+    with torch.no_grad():
+        for negative_sample, queries, queries_unflatten, query_structures, easy_answers, hard_answers in tqdm(test_dataloader, disable=(not args.print_on_screen) or rank):
+            assert len(queries_unflatten) == 1 # batch size == 1
+            assert len(hard_answers[0]) == 1 # only evaluate one tail
+            
+            query_mat = torch.LongTensor(queries)
+            negative_sample_bias = torch.where(negative_sample == -1, -1e6, 0.).to(device)
+            negative_sample_copy = negative_sample.clone()
+            negative_sample = torch.where(negative_sample == -1, 0, negative_sample)
+
+            _, negative_logit, _ = model(None, negative_sample, query_structures[0], query_mat, device=device)
+            
+            negative_logit += negative_sample_bias
+            argsort = torch.argsort(negative_logit, dim=1, descending=True)
+            top10_cand = negative_sample_copy[0, argsort[0, :10]].cpu().numpy()
+            pred_dict['h,r->t']['t_pred_top10'].append(top10_cand)
+            pred_dict['h,r->t']['t'].append(list(hard_answers[0])[0])
+            step += 1
+
+    pred_dict['h,r->t']['t'] = np.array(pred_dict['h,r->t']['t'])
+    pred_dict['h,r->t']['t_pred_top10'] = np.array(pred_dict['h,r->t']['t_pred_top10'])
+
+    if phase == 'valid':
+        metrics = evaluator.eval(pred_dict)
+        logs[query_structures[0]]['MRR'] += metrics['mrr'] * total_steps
+    elif phase == 'test':
+        logs[query_structures[0]]['MRR'] += 0
+    logs[query_structures[0]]['num_queries'] += total_steps
+    torch.save(pred_dict, os.path.join(args.save_path, "{}-{}-{}.pt".format(phase, train_step, rank)))
+    result_buffer.put((logs, train_step))
+
 
 def test_step_1p(model, args, train_sampler, test_dataloader, result_buffer, train_step, device, phase):
     model.eval()
@@ -91,7 +133,9 @@ def test_step_1p(model, args, train_sampler, test_dataloader, result_buffer, tra
     result_buffer.put((logs, train_step))
 
 
-def test_step_mp(model, args, train_sampler, test_dataloader, result_buffer, train_step, device, phase):
+def test_step_mp(model, args, train_sampler, evaluator, test_dataloader, result_buffer, train_step, device, phase):
+    if "wikikg90m-v2" in args.data_path:
+        return test_step_wikikgv2(model, args, evaluator, test_dataloader, result_buffer, train_step, device, phase)
     if args.eval_link_pred and args.eval_batch_size > 1:
         return test_step_1p(model, args, train_sampler, test_dataloader, result_buffer, train_step, device, phase)
     model.eval()
@@ -309,12 +353,17 @@ def train_func(args, kg_mem, opt_stats, model, eval_dict, training_tasks, ro_fea
                                   same_in_batch=args.train_dataset_mode=='single',
                                   num_threads=args.cpu_num)
 
+    if "wikikg90m-v2" in args.data_path:
+        evaluator = WikiKG90Mv2Evaluator()
+    else:
+        evaluator = None
+
     if not args.do_train:
         dist.barrier(device_ids=[rank])
         for phase in eval_dict:
             logging.info('[{}] Evaluating on {} Dataset...'.format(os.getpid(), phase))
             d = eval_dict[phase]
-            test_step_mp(model, args, train_sampler, data_loaders[phase], d.buffer, init_step, device, phase)
+            test_step_mp(model, args, train_sampler, evaluator, data_loaders[phase], d.buffer, init_step, device, phase)
             eval_dict[phase].buffer.put((None, None))
         return
 
@@ -401,7 +450,7 @@ def train_func(args, kg_mem, opt_stats, model, eval_dict, training_tasks, ro_fea
         for phase in eval_dict:
             logging.info('[{}] Evaluating on {} Dataset...'.format(os.getpid(), phase))
             d = eval_dict[phase]
-            test_step_mp(model, args, train_sampler, data_loaders[phase], d.buffer, step, device, phase)
+            test_step_mp(model, args, train_sampler, evaluator, data_loaders[phase], d.buffer, step, device, phase)
         dist.barrier(device_ids=[rank])
 
     logging.info("Finish training! Now cleaning up")
