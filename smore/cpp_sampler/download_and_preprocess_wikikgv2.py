@@ -23,9 +23,19 @@ import numpy as np
 import sys
 
 
+def download_candidate_set(save_dir):
+    valid_url = "https://snap.stanford.edu/smore/valid.pt"
+    test_url = "https://snap.stanford.edu/smore/test.pt"
+    if not os.path.exists(os.path.join(save_dir, "valid.pt")):
+        url.download_url(valid_url, save_dir)
+    if not os.path.exists(os.path.join(save_dir, "test.pt")):
+        url.download_url(test_url, save_dir)
+
+
 if __name__ == '__main__':
     save_dir = sys.argv[1]
     dataset = WikiKG90Mv2Dataset(root = save_dir)
+    download_candidate_set(os.path.join(save_dir, "wikikg90m-v2/eval-original"))
 
     save_dir = os.path.join(save_dir, "wikikg90m-v2")
     stats = torch.load(os.path.join(save_dir, 'meta.pt'))
