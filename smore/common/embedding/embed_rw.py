@@ -29,19 +29,11 @@ class DummyJob(object):
 
 
 class EmbeddingReadOnly(object):
-    def __init__(self, embed, gpu_id=-1, target_dtype=None):
+    def __init__(self, embed, gpu_id=-1):
         super(EmbeddingReadOnly, self).__init__()
         self.embed = embed.data
         self.gpu_id = gpu_id
         self.embed_dim = embed.shape[1]
-        if target_dtype is None:
-            self.target_dtype = embed.dtype
-        else:
-            self.target_dtype = target_dtype
-        if target_dtype != embed.dtype:
-            self.type_cast = lambda x: x.type(self.target_dtype)
-        else:
-            self.type_cast = lambda x: x
         if gpu_id == -1:
             self.device = 'cpu'
         else:
@@ -74,15 +66,13 @@ class EmbeddingReadOnly(object):
             t = self.embed.to(self.device)
             t.job_handle = self.dummy_job
             return t
-        if indices.numel() == self.embed.shape[0] and self.embed.is_cuda:  # TODO: make it more explicit
-            return self.embed
         if not self.embed.is_cuda:
             if name is not None and indices.numel() != self.embed.shape[0]:  # TODO: make it more explicit
                 return self.async_read(indices, name)
             for key in self.last_write_jobs:
                 self.last_write_jobs[key].sync()
         indices = indices.view(-1)
-        submat = self.type_cast(self.embed[indices].to(self.device))
+        submat = self.embed[indices].to(self.device)
         submat.job_handle = self.dummy_job
         return submat
 
@@ -97,7 +87,7 @@ class EmbeddingReadOnly(object):
                                            self.embed,
                                            buf,
                                            out)
-            submat = self.type_cast(out[:indices.shape[0]])
+            submat = out[:indices.shape[0]]
             submat.job_handle = job_handle
         return submat
 
@@ -106,7 +96,6 @@ class EmbeddingRW(EmbeddingReadOnly):
     def __init__(self, embed, gpu_id=-1):
         super(EmbeddingRW, self).__init__(embed, gpu_id)
         self.write_thread_pool = self.read_thread_pool
-        assert self.target_dtype == self.embed.dtype 
         self.write_buf = {}        
         self.write_src_cache = {}
 

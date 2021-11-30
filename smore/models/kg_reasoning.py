@@ -89,7 +89,7 @@ class KGReasoning(nn.Module):
         else:
             device = 'cuda:{}'.format(gpu_id)
         if is_sparse:
-            feat_read = EmbeddingReadOnly(feat, gpu_id=gpu_id, target_dtype=torch.float32)
+            feat_read = EmbeddingReadOnly(feat, gpu_id=gpu_id)
             setattr(self, "%s_feat" % name, feat_read)
         else:
             setattr(self, "%s_feat" % name, feat.to(device))
