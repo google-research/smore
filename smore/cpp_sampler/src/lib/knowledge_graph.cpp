@@ -392,11 +392,11 @@ void KG<Dtype>::load_from_numpy(void* _triplets, size_t n_triplets, const bool h
 }
 
 template<typename Dtype>
-void KG<Dtype>::load_partition_ids(void* _partition_ids)
+void KG<Dtype>::load_partition_ids(py::array_t<long long, py::array::c_style | py::array::forcecast> _partition_ids)
 {
-    int64_t* ids = static_cast<int64_t*>(_partition_ids);
+    long long* ids = _partition_ids.mutable_unchecked<1>().mutable_data(0);
     this->partition_ids = new Dtype[this->num_ent];
-    for (int i = 0; i < this->num_ent; ++i)
+    for (unsigned i = 0; i < this->num_ent; ++i)
         this->partition_ids[i] = ids[i];
 }
 

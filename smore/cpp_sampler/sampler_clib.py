@@ -57,6 +57,13 @@ def no_search_sampler(dtype):
         assert dtype == 'uint64'
         return libsampler.NoSearchSampler64
 
+def partition_sampler(dtype):
+    if dtype == 'uint32':
+        return libsampler.PartitionSampler32
+    else:
+        assert dtype == 'uint64'
+        return libsampler.PartitionSampler64
+
 def rejection_sampler(dtype):
     if dtype == 'uint32':
         return libsampler.RejectionSampler32

@@ -128,6 +128,8 @@ class OnlineSampler(object):
         elif sampler_type == 'edge':
             sampler_cls = sampler_clib.edge_sampler(kg_dtype)
             list_qt = query_names
+        elif sampler_type == 'partition':
+            sampler_cls = sampler_clib.partion_sampler(kg_dtype)            
         else:
             raise ValueError("Unknown sampler %s" % sampler_type)
         self.sampler_type = sampler_type

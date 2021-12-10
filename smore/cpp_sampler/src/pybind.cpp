@@ -53,6 +53,15 @@ void declare_sampler(py::module &mod, std::string typestr_suffix)
         .def("sample_batch_entities", &NoSearchSampler<Dtype>::sample_batch_entities)
         .def("print_queries", &NoSearchSampler<Dtype>::print_queries);
 
+    std::string partition_sampler_name = "PartitionSampler" + typestr_suffix;
+    py::class_<PartitionSampler<Dtype> >(mod, partition_sampler_name.c_str())
+        .def(py::init<KG<Dtype>*, py::list, py::list, bool, bool, bool, bool, Dtype, Dtype, Dtype, Dtype, int, py::list>())
+        .def("set_seed", &PartitionSampler<Dtype>::set_seed)
+        .def("prefetch", &PartitionSampler<Dtype>::prefetch)
+        .def("next_batch", &PartitionSampler<Dtype>::next_batch)
+        .def("sample_batch_entities", &PartitionSampler<Dtype>::sample_batch_entities)
+        .def("print_queries", &PartitionSampler<Dtype>::print_queries);
+
     std::string rejection_sampler_name = "RejectionSampler" + typestr_suffix;
     py::class_<RejectionSampler<Dtype> >(mod, rejection_sampler_name.c_str())
         .def(py::init<KG<Dtype>*, py::list, py::list, bool, bool, bool, bool, Dtype, Dtype, Dtype, Dtype, int, py::list>())
@@ -84,6 +93,7 @@ void declare_kg(py::module &mod, std::string typestr_suffix)
         .def("max_degree", &KG<Dtype>::max_degree)
         .def("ptr", &KG<Dtype>::ptr)
         .def("load", &KG<Dtype>::load)
+        .def("load_partition_ids", &KG<Dtype>::load_partition_ids)
         .def("dump", &KG<Dtype>::dump)
         .def("dump_nt", &KG<Dtype>::dump_nt)
         .def_readonly("dtype", &KG<Dtype>::dtype)

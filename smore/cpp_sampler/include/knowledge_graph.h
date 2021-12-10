@@ -70,7 +70,7 @@ public:
 
     void load_triplets(const std::string& fname, const bool has_reverse_edges);
     void load_triplets_from_files(py::list list_files, const bool has_reverse_edges);
-    void load_partition_ids(void* _partition_ids);
+    void load_partition_ids(py::array_t<long long, py::array::c_style | py::array::forcecast> _partition_ids);
 
     bool has_forward_edge(Dtype src, Dtype r, Dtype dst);
     bool has_backward_edge(Dtype src, Dtype r, Dtype dst);
