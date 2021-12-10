@@ -240,13 +240,13 @@ template class SortedList<unsigned>;
 template class SortedList<uint64_t>;
 
 template<typename Dtype>
-KG<Dtype>::KG() : num_ent(0), num_rel(0), num_edges(0), ent_out(nullptr), ent_in(nullptr)
+KG<Dtype>::KG() : num_ent(0), num_rel(0), num_edges(0), ent_out(nullptr), ent_in(nullptr), partition_ids(nullptr)
 {
     this->dtype = dtype2string<Dtype>();
 }
 
 template<typename Dtype>
-KG<Dtype>::KG(Dtype _num_ent, Dtype _num_rel) : num_ent(_num_ent), num_rel(_num_rel), num_edges(0), ent_out(nullptr), ent_in(nullptr)
+KG<Dtype>::KG(Dtype _num_ent, Dtype _num_rel) : num_ent(_num_ent), num_rel(_num_rel), num_edges(0), ent_out(nullptr), ent_in(nullptr), partition_ids(nullptr)
 {
     this->dtype = dtype2string<Dtype>();
 }
@@ -260,6 +260,9 @@ void KG<Dtype>::try_free()
         delete ent_in;
     ent_out = nullptr;
     ent_in = nullptr;
+    if (partition_ids)
+        delete partition_ids;
+    partition_ids = nullptr;
 }
 
 template<typename Dtype>
@@ -386,6 +389,15 @@ void KG<Dtype>::load_from_numpy(void* _triplets, size_t n_triplets, const bool h
         triplets += 3;
     }
     build_kg_from_edges(edges);
+}
+
+template<typename Dtype>
+void KG<Dtype>::load_partition_ids(void* _partition_ids)
+{
+    int64_t* ids = static_cast<int64_t*>(_partition_ids);
+    this->partition_ids = new Dtype[this->num_ent];
+    for (int i = 0; i < this->num_ent; ++i)
+        this->partition_ids[i] = ids[i];
 }
 
 template<typename Dtype>

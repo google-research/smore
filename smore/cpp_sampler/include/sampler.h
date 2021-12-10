@@ -94,7 +94,7 @@ public:
     virtual void print_queries();
 
 protected:
-    bool sample_actual_query(QueryTree<Dtype>* qt, Dtype answer, bool inverse);
+    bool sample_actual_query(QueryTree<Dtype>* qt, Dtype answer, bool inverse);    
     bool verify_sampled_query(QueryTree<Dtype>* qt, Dtype answer, bool inverse);
 };
 
@@ -144,6 +144,20 @@ public:
     double avg_sample_weight;
 protected:
     int check_neg_depth(QueryTree<Dtype>* qt, bool& false_pos_flag);
+};
+
+
+template<typename Dtype>
+class PartitionSampler : public NoSearchSampler<Dtype>
+{
+public:
+    PartitionSampler(KG<Dtype>* _kg, py::list query_trees, py::list _query_prob, bool share_negative, bool _same_in_batch,
+            bool weighted_answer_sampling, bool weighted_negative_sampling,
+            Dtype negative_sample_size, Dtype rel_bandwidth, Dtype max_to_keep, Dtype max_n_partial_answers,
+            int num_threads, py::list no_search_list);
+
+    bool sample_actual_query(QueryTree<Dtype>* qt, Dtype answer, bool inverse, std::vector<Dtype>& ent_list);
+    virtual QuerySample<Dtype>* gen_sample(int query_type, const Dtype* list_neg_candidates) override;
 };
 
 template<typename Dtype>

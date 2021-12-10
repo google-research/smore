@@ -70,6 +70,7 @@ public:
 
     void load_triplets(const std::string& fname, const bool has_reverse_edges);
     void load_triplets_from_files(py::list list_files, const bool has_reverse_edges);
+    void load_partition_ids(void* _partition_ids);
 
     bool has_forward_edge(Dtype src, Dtype r, Dtype dst);
     bool has_backward_edge(Dtype src, Dtype r, Dtype dst);
@@ -84,6 +85,7 @@ public:
     Dtype num_ent, num_rel;
     Dtype num_edges;
     SortedList<Dtype>* ent_out, *ent_in;
+    Dtype* partition_ids;
     std::string dtype;
 private:
     void try_free();
