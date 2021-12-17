@@ -15,19 +15,20 @@
 # limitations under the License.
 
 data_name=FB15k
-data_folder=$HOME/data/knowledge_graphs/$data_name
+data_folder=/home/ssm-user/hyren/smore/data/$data_name
 eval_path=$data_folder/eval-betae
 
-export CUDA_VISIBLE_DEVICES=0,1,2,3
+export CUDA_VISIBLE_DEVICES=4,5,6,7
 
 #box
 python ../main_train.py --do_train --do_test --gpus '0.1.2.3' \
  --data_path $data_folder --eval_path $eval_path \
  -n 1024 -b 512 -d 400 -g 24 \
- -lr 0.0001 --max_steps 1000001 --geo box --valid_steps 20000 \
+ -lr 0.0001 --max_steps 1500001 --geo box --valid_steps 20000 \
  -boxm '(none,0.02)' --tasks '1p.2p.3p.2i.3i.ip.pi.2u.up' --training_tasks '1p.2p.3p.2i.3i' \
  --save_checkpoint_steps 50000 \
  --sampler_type naive \
+ --logit_impl custom \
  --lr_schedule none \
  --port 29500 \
  --share_negative \
