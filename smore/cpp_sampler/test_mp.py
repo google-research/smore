@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 SMORE Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -183,7 +183,6 @@ def gen_sample(qs, gpu_id, barrier):
 if __name__ == '__main__':
     db_name = 'FB15k'
     data_folder = os.path.join(os.path.expanduser('~'), 'data/knowledge_graphs/%s' % db_name)
-    # data_folder = '/dfs/user/hyren/betae-release/data/FB15k-betae/'
     with open(os.path.join(data_folder, 'stats.txt'), 'r') as f:
         num_ent = f.readline().strip().split()[-1]
         num_rel = f.readline().strip().split()[-1]
