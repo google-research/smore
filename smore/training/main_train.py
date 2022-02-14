@@ -33,7 +33,7 @@ import torch.multiprocessing as mp
 import math
 
 from smore.models import build_model
-from smore.common.util import flatten_query, list2tuple, parse_time, set_global_seed, eval_tuple, construct_graph, tuple2filterlist
+from smore.common.util import flatten_query, list2tuple, parse_time, set_global_seed, eval_tuple, construct_graph, tuple2filterlist, maybe_download_dataset
 from smore.common.config import parse_args, all_tasks, query_name_dict, name_query_dict
 from smore.common.embedding.embed_optimizer import get_optim_class
 from smore.cpp_sampler.sampler_clib import KGMem
@@ -305,6 +305,8 @@ def main(parser):
     set_global_seed(args.seed)
     gpus = [int(i) for i in args.gpus.split(".")]
     assert args.gpus == '.'.join([str(i) for i in range(len(gpus))]), 'only support continuous gpu ids starting from 0, please set CUDA_VISIBLE_DEVICES instead'
+    
+    maybe_download_dataset(args.data_path)
 
     setup_train_mode(args)
     
