@@ -24,14 +24,15 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 python ../main_train.py --do_train --do_test --gpus '0.1.2.3' \
  --data_path $data_folder --eval_path $eval_path \
  -n 1024 -b 512 -d 800 -g 24 \
- -lr 0.0001 --max_steps 800001 --geo vec --valid_steps 20000 \
+ -lr 0.0001 --max_steps 2000001 --geo vec --valid_steps 20000 \
  --tasks '1p.2p.3p.2i.3i.ip.pi.2u.up' --training_tasks '1p.2p.3p.2i.3i' \
  --save_checkpoint_steps 40000 \
- --lr_schedule step \
+ --lr_schedule none \
  --sampler_type naive \
+ --logit_impl custom \
  --share_negative \
  --filter_test \
- --port 29500 \
+ --port 29504 \
  --share_optim_stats \
  --online_sample --prefix '../logs' --online_sample_mode '(500,0,w,wstruct,120)' \
  --train_online_mode '(single,3000,e,True,before)' --optim_mode '(aggr,adam,cpu,False,5)' --online_weighted_structure_prob '(2,2,2,1,1)' --print_on_screen \
