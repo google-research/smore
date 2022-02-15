@@ -24,9 +24,14 @@ from torch.multiprocessing import Queue
 from _thread import start_new_thread
 import traceback
 import logging
-import pdb
-
+import os
+from tqdm import tqdm
+import shutil
+import zipfile
+import urllib.request as ur
 from smore.common.config import name_query_dict, query_name_dict
+
+GBFACTOR = float(1 << 30)
 
 def cal_ent_loc(query_structure, idx):
     if query_structure[0] == '<':
@@ -234,6 +239,73 @@ def fill_query(query_structure, ent_in, ent_out, answer, chill=False):
 
 def sample_negative_bidirectional(query, ent_in, ent_out, nent):
     pass
+
+
+def download_url(url, folder, log=True):
+    r"""Downloads the content of an URL to a specific folder.
+    Args:
+        url (string): The url.
+        folder (string): The folder.
+        log (bool, optional): If :obj:`False`, will not print anything to the
+            console. (default: :obj:`True`)
+    """
+
+    filename = url.rpartition('/')[2]
+    path = osp.join(folder, filename)
+
+    if osp.exists(path) and osp.getsize(path) > 0:  # pragma: no cover
+        if log:
+            print('Using exist file', filename)
+        return path
+
+    if log:
+        print('Downloading', url)
+
+    if not osp.exists(folder):
+        os.makedirs(folder)
+    data = ur.urlopen(url)
+
+    size = int(data.info()["Content-Length"])
+
+    chunk_size = 1024*1024
+    num_iter = int(size/chunk_size) + 2
+
+    downloaded_size = 0
+
+    try:
+        with open(path, 'wb') as f:
+            pbar = tqdm(range(num_iter))
+            for i in pbar:
+                chunk = data.read(chunk_size)
+                downloaded_size += len(chunk)
+                pbar.set_description("Downloaded {:.2f} GB".format(float(downloaded_size)/GBFACTOR))
+                f.write(chunk)
+    except:
+        if osp.exists(path):
+             os.remove(path)
+        raise RuntimeError('Stopped downloading due to interruption.')
+
+
+    return path
+
+def maybe_download_dataset(data_path):
+    data_name = data_path.split('/')[-1]
+    if data_name in ['FB15k', 'FB15k-237', 'NELL', "FB400k"]:
+        if not (osp.exists(data_path) and osp.exists(osp.join(data_path, "stats.txt"))):
+            url = "https://snap.stanford.edu/betae/%s.zip" % data_name
+            path = download_url(url, osp.split(osp.abspath(data_path))[0])
+            extract_zip(path, osp.split(osp.abspath(data_path))[0])
+            os.unlink(path)
+
+def extract_zip(path, folder):
+    r"""Extracts a zip archive to a specific folder.
+    Args:
+        path (string): The path to the tar archive.
+        folder (string): The folder.
+    """
+    print('Extracting', path)
+    with zipfile.ZipFile(path, 'r') as f:
+        f.extractall(folder)
 
 
 def thread_wrapped_func(func):

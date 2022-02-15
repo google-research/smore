@@ -98,7 +98,7 @@ def test_step_mp(model, args, train_sampler, test_dataloader, result_buffer, tra
     rank = dist.get_rank()
     step = 0
     total_steps = len(test_dataloader)
-    logs = collections.defaultdict(list)
+    logs = collections.defaultdict(collections.Counter)
     all_embed = None
     negative_sample_bias = None
 
@@ -153,27 +153,19 @@ def test_step_mp(model, args, train_sampler, test_dataloader, result_buffer, tra
                     h10 = torch.mean((cur_ranking <= 10).to(torch.float)).item()
                     h1m = ((cur_ranking[0] == 1).to(torch.float)).item()
 
-                logs[query_structure].append({
-                    'MRR': mrr,
-                    'HITS1': h1,
-                    'HITS3': h3,
-                    'HITS10': h10,
-                    'HITS1max': h1m,
-                    'num_hard_answer': num_hard,
-                })
+                logs[query_structure]['MRR'] += mrr
+                logs[query_structure]['HITS1'] += h1
+                logs[query_structure]['HITS3'] += h3
+                logs[query_structure]['HITS10'] += h10
+                logs[query_structure]['HITS1max'] += h1m
+                logs[query_structure]['num_hard_answer'] += 1
+                logs[query_structure]['num_queries'] += 1
 
             if step % args.test_log_steps == 0:
                 logging.info('Evaluating the model... (%d/%d)' % (step, total_steps))
 
             step += 1
 
-    # metrics = collections.defaultdict(lambda: collections.defaultdict(int))
-    # for query_structure in logs:
-    #     for metric in logs[query_structure][0].keys():
-    #         if metric in ['num_hard_answer']:
-    #             continue
-    #         metrics[query_structure][metric] = sum([log[metric] for log in logs[query_structure]])/len(logs[query_structure])
-    #     metrics[query_structure]['num_queries'] = len(logs[query_structure])
     result_buffer.put((logs, train_step))
 
 

@@ -26,14 +26,15 @@ python ../main_train.py --do_train --do_test --gpus '0.1.2.3' \
  -n 1024 -b 512 -d 400 -g 60 \
  -a 0.5 -adv \
  -lr 0.0001 --max_steps 450001 --geo beta --valid_steps 15000 \
- -betam "(1600,2)" --tasks '1p.2p.3p.2i.3i.ip.pi.2u.up' --training_tasks '1p.2p.3p.2i.3i' \
+ -betam '(1600,2,fisher,0.055,layer,True)' --tasks '1p.2p.3p.2i.3i.ip.pi.2u.up' --training_tasks '1p.2p.3p.2i.3i' \
  --save_checkpoint_steps 150000 \
  --share_negative \
  --lr_schedule none \
+ --logit_impl custom \
  --sampler_type naive \
  --filter_test \
  --share_optim_stats \
- --port 29500 \
+ --port 29512 \
  --online_sample --prefix '../logs' --online_sample_mode '(500,0,w,wstruct,120)' \
  --train_online_mode '(single,3000,e,True,before)' --optim_mode '(aggr,adam,cpu,False,5)' --online_weighted_structure_prob '(20,20,20,10,10)' --print_on_screen \
  $@

@@ -24,10 +24,11 @@ export CUDA_VISIBLE_DEVICES=4,5,6,7
 python ../main_train.py --do_train --do_test --gpus '0.1.2.3' \
  --data_path $data_folder --eval_path $eval_path \
  -n 1024 -b 512 -d 400 -g 24 \
- -lr 0.0001 --max_steps 450001 --geo box --valid_steps 15000 \
+ -lr 0.0001 --max_steps 600001 --geo box --valid_steps 15000 \
  -boxm '(none,0.02)' --tasks '1p.2p.3p.2i.3i.ip.pi.2u.up' --training_tasks '1p.2p.3p.2i.3i' \
  --save_checkpoint_steps 30000 \
  --sampler_type naive \
+ --logit_impl custom \
  --port 29501 \
  --share_negative \
  --filter_test \
