@@ -104,6 +104,7 @@ def parse_args(args=None):
     parser.add_argument('--checkpoint_path', default=None, type=str, help='path for loading the checkpoints')
     parser.add_argument('-evu', '--evaluate_union', default="DNF", type=str, choices=['DNF', 'DM'], help='the way to evaluate union queries, transform it to disjunctive normal form (DNF) or use the De Morgan\'s laws (DM)')
 
+    parser.add_argument('--eval_async', action='store_true', default=False)
     parser.add_argument('--share_optim_stats', action='store_true', default=False)
     parser.add_argument('--filter_test', action='store_true', default=False)
     parser.add_argument('--online_sample', action='store_true', default=False)

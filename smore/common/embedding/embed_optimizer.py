@@ -115,6 +115,7 @@ class EmbeddingOptimizer(ABC):
 
     def __init__(self, args, sp_embed, gpu_id):
         self.args = args
+        self.eval_async = args.eval_async
         self.grad_stats = []
         self.embed_rw = EmbeddingRW(sp_embed.embedding, gpu_id=gpu_id)
         self.sparse_embed = sp_embed
@@ -150,6 +151,10 @@ class EmbeddingOptimizer(ABC):
     def forward(self, indices, name):
         if self.sparse_embed.training and self.optimizer_device == 'cpu':
             self.prepare_forward(indices, name)
+        if self.sparse_embed.training or self.eval_async:
+            pass
+        else:
+            name = None
         return EmbedLookupFunc.apply(self, self.dummy_tensor, indices, name)
 
     def apply_grad(self, lr):
