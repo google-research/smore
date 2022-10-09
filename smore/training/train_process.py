@@ -451,7 +451,7 @@ def train_func(args, kg_mem, opt_stats, model, eval_dict, training_tasks, ro_fea
             logging.info('[{}] Evaluating on {} Dataset...'.format(os.getpid(), phase))
             d = eval_dict[phase]
             test_step_mp(model, args, train_sampler, evaluator, data_loaders[phase], d.buffer, step, device, phase)
-        dist.barrier(device_ids=[rank])
+            dist.barrier(device_ids=[rank])
 
     logging.info("Finish training! Now cleaning up")
     dist.barrier(device_ids=[rank])
