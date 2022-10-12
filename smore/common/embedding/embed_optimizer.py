@@ -116,6 +116,7 @@ class EmbeddingOptimizer(ABC):
     def __init__(self, args, sp_embed, gpu_id):
         self.args = args
         self.eval_async = args.eval_async
+        self.train_async_rw = args.train_async_rw
         self.grad_stats = []
         self.embed_rw = EmbeddingRW(sp_embed.embedding, gpu_id=gpu_id)
         self.sparse_embed = sp_embed
@@ -149,12 +150,12 @@ class EmbeddingOptimizer(ABC):
         self.has_grad_list.append(fwd_idx)
 
     def forward(self, indices, name):
+        if self.sparse_embed.training:
+            name = name if self.train_async_rw else None
+        else:
+            name = name if self.eval_async else None
         if self.sparse_embed.training and self.optimizer_device == 'cpu':
             self.prepare_forward(indices, name)
-        if self.sparse_embed.training or self.eval_async:
-            pass
-        else:
-            name = None
         return EmbedLookupFunc.apply(self, self.dummy_tensor, indices, name)
 
     def apply_grad(self, lr):
@@ -187,7 +188,7 @@ class SGDEmbedOptimizer(EmbeddingOptimizer):
         with torch.no_grad():
             # calculate final grad and update embed_mat
             tmp = -lr * grad
-            self.embed_rw.write(indices, tmp, name="embed_gd", additive=True)
+            self.embed_rw.write(indices, tmp, name="embed_gd" if self.train_async_rw else None, additive=True)
 
 
 class AdamEmbedOptimizer(EmbeddingOptimizer):
@@ -250,11 +251,11 @@ class AdamEmbedOptimizer(EmbeddingOptimizer):
 
             # calculate final grad and update embed_mat
             tmp = -lr/bias_correction1 * grad_avg_fo/denom
-            self.embed_rw.write(indices, tmp, name="embed_gd", additive=True)
+            self.embed_rw.write(indices, tmp, name="embed_gd" if self.train_async_rw else None, additive=True)
 
             # copy new momentum to state_sum
-            self.state_sum_fo_rw.write(indices, grad_avg_fo - bak_fo, name="update_fo", additive=True)
-            self.state_sum_sq_rw.write(indices, grad_avg_sq - bak_sq, name="update_sq", additive=True)
+            self.state_sum_fo_rw.write(indices, grad_avg_fo - bak_fo, name="update_fo" if self.train_async_rw else None, additive=True)
+            self.state_sum_sq_rw.write(indices, grad_avg_sq - bak_sq, name="update_sq" if self.train_async_rw else None, additive=True)
 
 
 class RMSpropEmbedOptimizer(EmbeddingOptimizer):
@@ -350,8 +351,8 @@ class AdaGradEmbedOptimizer(EmbeddingOptimizer):
             square_avg = square_avg + grad_sum
             avg = square_avg.sqrt().add_(eps)
             tmp = -lr * grad/avg
-            self.embed_rw.write(indices, tmp, name="embed_gd", additive=True)
-            self.state_sum_rw.write(indices, grad_sum, name="update_sq", additive=True)
+            self.embed_rw.write(indices, tmp, name="embed_gd" if self.train_async_rw else None, additive=True)
+            self.state_sum_rw.write(indices, grad_sum, name="update_sq" if self.train_async_rw else None, additive=True)
 
 
 def get_optim_class(args):
