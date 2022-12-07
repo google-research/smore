@@ -56,16 +56,7 @@ def build_cpp():
     os.chdir(original_cwd)
 
 
-class custom_develop(develop):
-    def run(self):
-        build_cpp()
-        super().run()
-
-
-class custom_install(install):
-    def run(self):
-        build_cpp()
-        super().run()
+build_cpp()
 
 
 setup(name='smore',
@@ -75,8 +66,6 @@ setup(name='smore',
       ],
       cmdclass={
           'build_ext': BuildExtension,
-          'develop': custom_develop,
-          'install': custom_install,
         },
       include_package_data=True,
       data_files=['smore/cpp_sampler/libsampler_c.so', 'smore/cpp_sampler/libsampler.so']
