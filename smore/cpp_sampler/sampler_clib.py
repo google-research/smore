@@ -23,12 +23,12 @@ import torch.distributed as dist
 from collections import defaultdict
 from tqdm import tqdm
 
-dll_path = '%s/build/dll/libsampler_c.so' % os.path.dirname(os.path.realpath(__file__))
+dll_path = '%s/../libsampler_c.so' % os.path.dirname(os.path.realpath(__file__))
 
 class _sampler_clib(object):
     def __init__(self):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.lib = ctypes.CDLL('%s/build/dll/libsampler_c.so' % dir_path)
+        self.lib = ctypes.CDLL('%s/../libsampler_c.so' % dir_path)
 
 if os.path.exists(dll_path):
     SCLIB = _sampler_clib()

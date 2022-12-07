@@ -41,20 +41,30 @@ if torch.cuda.is_available():
                                     ]],
                                     extra_compile_args=compile_args))
 
+
+def build_cpp():
+    original_cwd = os.getcwd()
+
+    # build custom ops
+    folders = [
+        os.path.join(BASEPATH, 'smore/cpp_sampler'),
+    ]
+    for folder in folders:
+        os.chdir(folder)
+        subprocess.check_call(['make'])
+
+    os.chdir(original_cwd)
+
+
 class custom_develop(develop):
     def run(self):
-        original_cwd = os.getcwd()
+        build_cpp()
+        super().run()
 
-        # build custom ops
-        folders = [
-           os.path.join(BASEPATH, 'smore/cpp_sampler'),
-        ]
-        for folder in folders:
-            os.chdir(folder)
-            subprocess.check_call(['make'])
 
-        os.chdir(original_cwd)
-
+class custom_install(install):
+    def run(self):
+        build_cpp()
         super().run()
 
 
@@ -66,6 +76,7 @@ setup(name='smore',
       cmdclass={
           'build_ext': BuildExtension,
           'develop': custom_develop,
+          'install': custom_install,
         },
       include_package_data=True
 )
