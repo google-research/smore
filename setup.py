@@ -78,5 +78,6 @@ setup(name='smore',
           'develop': custom_develop,
           'install': custom_install,
         },
-      include_package_data=True
+      include_package_data=True,
+      data_files=['smore/cpp_sampler/libsampler_c.so', 'smore/cpp_sampler/libsampler.so']
 )

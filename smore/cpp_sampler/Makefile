@@ -40,18 +40,18 @@ cxx_obj_files = $(subst .cpp,.o,$(cpp_files))
 objs = $(addprefix build/lib/,$(cxx_obj_files))
 DEPS = $(objs:.o=.d)
 
-target = ../libsampler.so ../libsampler_c.so
+target = libsampler.so libsampler_c.so
 target_dep = $(addsuffix .d,$(target))
 
 .PRECIOUS: build/lib/%.o
 
 all: $(target)
 
-../libsampler.so : src/pybind.cpp $(objs)
+libsampler.so : src/pybind.cpp $(objs)
 	$(dir_guard)
 	$(CXX) -shared $(CXXFLAGS) $(PY_FLAG) $(PYBIND) -MMD -o $@ $(filter %.cpp %.o, $^) $(LDFLAGS)
 
-../libsampler_c.so : src/sampler_clib.cpp $(objs)
+libsampler_c.so : src/sampler_clib.cpp $(objs)
 	$(dir_guard)
 	$(CXX) -shared $(CXXFLAGS) $(PY_FLAG) $(PYBIND) -MMD -o $@ $(filter %.cpp %.o, $^) $(LDFLAGS)
 
