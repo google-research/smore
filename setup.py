@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from distutils.command.build import build
 from setuptools.command.install import install
 
@@ -27,7 +27,7 @@ extlib_path = 'smore/common/torchext'
 compile_args = ['-I%s/third_party/ThreadPool' % BASEPATH, '-Wno-deprecated-declarations']
 link_args = []
 
-ext_modules=[CppExtension('extlib', 
+ext_modules=[CppExtension('smore.extlib', 
                           ['%s/extlib.cpp' % extlib_path],
                           extra_compile_args=compile_args,
                           extra_link_args=link_args)]
@@ -35,7 +35,7 @@ ext_modules=[CppExtension('extlib',
 # build cuda lib
 import torch
 if torch.cuda.is_available():
-    ext_modules.append(CUDAExtension('extlib_cuda',
+    ext_modules.append(CUDAExtension('smore.extlib_cuda',
                                     ['%s/%s' % (extlib_path, x) for x in [
                                         'extlib_cuda.cpp', 'ext_cuda_kernel.cu'
                                     ]],
@@ -59,12 +59,13 @@ class custom_develop(develop):
 
 
 setup(name='smore',
-      py_modules=['smore'],
       ext_modules=ext_modules,
+      packages=find_packages(),
       install_requires=[
       ],
       cmdclass={
           'build_ext': BuildExtension,
           'develop': custom_develop,
-        }
+        },
+      include_package_data=True
 )

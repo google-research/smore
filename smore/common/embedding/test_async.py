@@ -15,7 +15,7 @@
 import torch
 import sys
 import numpy as np
-import extlib_cuda as extlib
+import smore.extlib_cuda as extlib
 from smore.common.embedding.embed_rw import AsyncEmbeddingRW
 import time
 import random

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import torch
-import extlib_cuda as extlib
+import smore.extlib_cuda as extlib
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 

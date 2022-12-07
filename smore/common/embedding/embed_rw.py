@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import torch
 import torch.nn as nn
-import extlib_cuda as extlib
+import smore.extlib_cuda as extlib
 from abc import ABC, abstractmethod
 
 
