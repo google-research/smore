@@ -68,5 +68,5 @@ setup(name='smore',
           'build_ext': BuildExtension,
         },
       include_package_data=True,
-      data_files=['smore/cpp_sampler/libsampler_c.so', 'smore/cpp_sampler/libsampler.so']
+#      data_files=['smore/cpp_sampler/libsampler_c.so', 'smore/cpp_sampler/libsampler.so']
 )
